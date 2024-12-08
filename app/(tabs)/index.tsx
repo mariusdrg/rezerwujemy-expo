@@ -1,11 +1,33 @@
+import React, { useEffect } from "react";
 import { Image, StyleSheet, Platform } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+import { useTranslation } from "react-i18next";
+
 export default function HomeScreen() {
+  const { i18n, t } = useTranslation();
+  const currentLanguage = i18n.language;
+
+  useEffect(() => {
+    const loadLanguage = async () => {
+      const savedLanguage = await AsyncStorage.getItem("language");
+      if (savedLanguage) {
+        i18n.changeLanguage(savedLanguage);
+      }
+    };
+    loadLanguage();
+  }, [i18n]);
+
+  const changeLanguage = async (lang: string) => {
+    await AsyncStorage.setItem("language", lang);
+    i18n.changeLanguage(lang);
+  };
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -16,12 +38,16 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">{t('home.welcome')}!</ThemedText>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
+        
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
         <ThemedText>
+          <ThemedText onPress={() => changeLanguage('pl-PL')}>Change to polish</ThemedText>
+          <ThemedText onPress={() => changeLanguage('en-US')}>Change to english</ThemedText>
+          
           Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
           Press{' '}
           <ThemedText type="defaultSemiBold">
